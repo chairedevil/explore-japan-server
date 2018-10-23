@@ -8,12 +8,18 @@
   },
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.18.0",
+    "bcrypt": "^3.0.2",
     "body-parser": "^1.18.3",
     "cors": "^2.8.4",
     "express": "^4.16.3",
     "express-myconnection": "^1.0.4",
+    "jwt-simple": "^0.5.5",
     "mysql": "^2.16.0",
     "nodemon": "^1.18.4",
-    "npm": "^6.4.1"
+    "npm": "^6.4.1",
+    "passport": "^0.4.0",
+    "passport-jwt": "^4.0.0",
+    "passport-local": "^1.0.0"
   }
 }
