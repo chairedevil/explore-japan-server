@@ -3,7 +3,8 @@ const jwt = require('jwt-simple')
 const config = require('../config')
 
 function generateToken(user){
-    const timestamp = new Date().getTime()
+    const timestamp = Math.round(Date.now() / 1000)
+    const exp = Math.round(Date.now() / 1000) + (60 * 60 * 24 * 7)
     return jwt.encode(
         /*{
             sub: user.id,
@@ -11,13 +12,13 @@ function generateToken(user){
             isAdmin: user.isAdmin,
             iat: timestamp
         },*/
-        { sub: user.userId, ...serialize(['userId', 'password'], user), iat: timestamp },
+        { sub: user.userId, ...serialize(['userId', 'password'], user), iat: timestamp, exp},
         config.secret
     )
 }
 
 function serialize(delParams, user){
-    console.log(user)
+    //console.log(user)
     let serializedUser = user
     delParams.forEach((key)=>{
         delete serializedUser[key]
@@ -26,9 +27,8 @@ function serialize(delParams, user){
 }
 
 exports.signin = (req, res, next) => {
-    res.header('Authentication', `Bearer ${generateToken(req.user)}`)
     res.status(201)
-    res.json(serialize(['password'], req.user))
+    res.json({ 'token': generateToken(req.user) })
 }
 
 exports.createUser = (req, res, next) => {

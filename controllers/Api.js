@@ -11,7 +11,7 @@ exports.googleplace = (req, res, next) => {
 
         axios.get('https://maps.googleapis.com/maps/api/place/autocomplete/json',{
             params:{
-                language: 'ja',
+                //language: 'ja',
                 input: chr,
                 key: config.GOOGLE_API_TOKEN,
                 sessiontoken: '1234567890'

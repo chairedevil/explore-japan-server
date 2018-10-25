@@ -3,29 +3,54 @@ exports.findAll = (req, res, next) => {
         if(err) return next(err)
 
         //API : http://localhost:3010/articles?search=tokyo+japan
-
-        words = req.query.search.split(" ");
-        params = [];
-
-        sql = `SELECT * FROM articles
-            LEFT JOIN prefectures ON articles.prefectureId = prefectures.prefectureId`
-
-        if(words[0] != ''){
-            sql = sql + ` WHERE`
-
-            for(var i in words){
-                word = `%${words[i]}%`
-                params.push(word,word,word)
-                sql = sql + ` LOWER(articles.title) LIKE ? OR
-                    prefectures.nameEn LIKE ? OR
-                    tags LIKE ? OR`
-            }
-
-            sql = sql.slice(0 ,-3)
-
+        
+        let params = [];
+        let words = req.query.search.split(" ");
+        if(words == ''){
+            wordsExp = ' '
+        }else{
+            wordsExp = words.join("|").toLowerCase()
         }
 
-        sql = sql + ' ORDER BY articles.createdDateTime DESC';
+        //console.log(wordsExp, req.query.start, req.query.end)
+
+        const sPnt = req.query.start
+        const ePnt = req.query.end
+
+        if(req.query.start == '' && req.query.end == ''){
+            params.push( wordsExp, wordsExp, wordsExp, wordsExp )
+            sql = `SELECT * FROM articles
+            LEFT JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+            WHERE articles.title REGEXP ? OR
+                prefectures.nameEn REGEXP ? OR
+                prefectures.nameJp REGEXP ? OR
+                articles.tags REGEXP ?
+            ORDER BY articles.createdDateTime DESC`
+        }else{
+            params.push( wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt )
+            sql = `SELECT * FROM articles
+            LEFT JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+            WHERE ((articles.articleType=0) AND (articles.title REGEXP ? OR
+                    prefectures.nameEn REGEXP ? OR
+                    prefectures.nameJp REGEXP ? OR
+                    articles.tags REGEXP ?)
+                    AND ((DayOfYear(?) BETWEEN DayOfYear(articles.scopeDateStart) AND DayOfYear(articles.scopeDateEnd)) OR (DayOfYear(?) BETWEEN DayOfYear(articles.scopeDateStart) AND DayOfYear(articles.scopeDateEnd))))
+                    OR
+                    ((articles.articleType=1) AND (articles.title REGEXP ? OR
+                    prefectures.nameEn REGEXP ? OR
+                    prefectures.nameJp REGEXP ? OR
+                    articles.tags REGEXP ?)
+                    AND ((DayOfYear(articles.scopeDateStart) BETWEEN DayOfYear(?) AND DayOfYear(?))))
+                    OR
+                    ((articles.articleType=2) AND (articles.title REGEXP ? OR
+                    prefectures.nameEn REGEXP ? OR
+                    prefectures.nameJp REGEXP ? OR
+                    articles.tags REGEXP ?)
+                    AND ((? BETWEEN articles.scopeDateStart AND articles.scopeDateEnd) OR (? BETWEEN articles.scopeDateStart AND articles.scopeDateEnd)))
+                    OR
+                    (articles.scopeDateStart IS NULL AND articles.scopeDateEnd IS NULL)
+            ORDER BY articles.createdDateTime DESC`
+        }
 
         //console.log(sql)
         //console.log(params)
