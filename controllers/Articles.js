@@ -48,7 +48,11 @@ exports.findAll = (req, res, next) => {
                     articles.tags REGEXP ?)
                     AND ((? BETWEEN articles.scopeDateStart AND articles.scopeDateEnd) OR (? BETWEEN articles.scopeDateStart AND articles.scopeDateEnd)))
                     OR
-                    (articles.scopeDateStart IS NULL AND articles.scopeDateEnd IS NULL)
+                    ((articles.title REGEXP ? OR
+                    prefectures.nameEn REGEXP ? OR
+                    prefectures.nameJp REGEXP ? OR
+                    articles.tags REGEXP ?)
+                    AND articles.scopeDateStart IS NULL AND articles.scopeDateEnd IS NULL)
             ORDER BY articles.createdDateTime DESC`
         }
 
