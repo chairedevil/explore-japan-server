@@ -27,7 +27,7 @@ exports.findAll = (req, res, next) => {
                 articles.tags REGEXP ?
             ORDER BY articles.createdDateTime DESC`
         }else{
-            params.push( wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt )
+            params.push( wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp)
             sql = `SELECT * FROM articles
             LEFT JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
             WHERE ((articles.articleType=0) AND (articles.title REGEXP ? OR
@@ -52,7 +52,7 @@ exports.findAll = (req, res, next) => {
                     prefectures.nameEn REGEXP ? OR
                     prefectures.nameJp REGEXP ? OR
                     articles.tags REGEXP ?)
-                    AND articles.scopeDateStart IS NULL AND articles.scopeDateEnd IS NULL)
+                    AND (articles.scopeDateStart IS NULL AND articles.scopeDateEnd IS NULL))
             ORDER BY articles.createdDateTime DESC`
         }
 

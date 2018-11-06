@@ -1,4 +1,4 @@
-module.exports = {
+/*module.exports = {
     secret: 'chai731token',
     dbOptions: {
         host    : 'uc13jynhmkss3nve.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
@@ -9,8 +9,8 @@ module.exports = {
         //socketPath: '/Applications/MAMP/tmp/mysql/mysql.sock'
     },
     GOOGLE_API_TOKEN: 'AIzaSyD_vlghBt3iKntZq1nVCR6uGVJuCk3hbdE'
-}
-/*
+}*/
+
 module.exports = {
     secret: 'chai731token',
     dbOptions: {
@@ -23,4 +23,3 @@ module.exports = {
     },
     GOOGLE_API_TOKEN: 'AIzaSyD_vlghBt3iKntZq1nVCR6uGVJuCk3hbdE'
 }
-*/

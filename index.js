@@ -20,5 +20,4 @@ routes(app)
 
 app.listen(PORT, () => {
     console.log('ready server on http://localhost:' + PORT)
-    console.log('rev1')
 })
