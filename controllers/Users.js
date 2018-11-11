@@ -52,3 +52,25 @@ exports.createUser = (req, res, next) => {
         })
     })
 }
+
+exports.checkUsername = (req, res, next) => {
+
+    //API : http://localhost:3010/check?username=abcd
+
+    const checkUsername = req.query.username
+    //console.log(checkUsername)
+
+    req.getConnection((err, connection) => {
+        if(err) return next(err)
+
+        connection.query("SELECT userId FROM users WHERE username = ?",checkUsername,(err, results) => {
+            if(err) return next(err)
+            
+            if(results.length > 0){
+                res.send(true)
+            }else{
+                res.send(false)
+            }
+        })
+    })
+}

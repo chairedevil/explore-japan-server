@@ -22,6 +22,7 @@ module.exports = function (app) {
 
     //User
     app.post('/users', users.createUser)
+    app.get('/check', users.checkUsername)
 
     //API
     app.get('/autoplace', api.googleplace)
