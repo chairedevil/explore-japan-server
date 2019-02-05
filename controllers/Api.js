@@ -33,3 +33,42 @@ exports.googleplace = (req, res, next) => {
         })
 
 }
+
+exports.getPrefectureName = (req, res, next) => {
+
+    //API : http://localhost:3010/getPrefectureName?lat=()lng=()
+
+    lat = req.query.lat.trim()
+    lng = req.query.lng.trim()
+
+    axios.get('https://maps.googleapis.com/maps/api/geocode/json',{
+        params:{
+            //language: 'ja',
+            latlng: `${lat},${lng}`,
+            key: config.GOOGLE_API_TOKEN,
+            result_type: "administrative_area_level_1"
+        }
+    })
+    .then(({data})=>{
+        res.send(data)
+    })
+
+}
+
+exports.getWeather = (req, res, next) => {
+
+    //API : http://localhost:3010/getWeather?city=()
+
+    city = req.query.city.trim()
+
+    axios.get('https://api.openweathermap.org/data/2.5/forecast',{
+        params:{
+            appid : config.openWeatherMapKey,
+            q: city + ",392"
+        }
+    })
+    .then(({data})=>{
+        res.send(data)
+    })
+
+}

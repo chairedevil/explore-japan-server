@@ -32,6 +32,8 @@ exports.signin = (req, res, next) => {
 }
 
 exports.createUser = (req, res, next) => {
+
+    //console.log(req.body)    
     bcrypt.hash(req.body.password, 10, (err, hash) => {
         if(err) return next(err)
 
@@ -51,6 +53,7 @@ exports.createUser = (req, res, next) => {
             })
         })
     })
+
 }
 
 exports.checkUsername = (req, res, next) => {
@@ -58,7 +61,6 @@ exports.checkUsername = (req, res, next) => {
     //API : http://localhost:3010/check?username=abcd
 
     const checkUsername = req.query.username
-    //console.log(checkUsername)
 
     req.getConnection((err, connection) => {
         if(err) return next(err)
@@ -71,6 +73,31 @@ exports.checkUsername = (req, res, next) => {
             }else{
                 res.send(false)
             }
+        })
+    })
+}
+
+exports.uploadAvatar = (req, res, next) => {
+    //console.log("Request file ---", req.file)
+    res.status(200)
+    res.json({ 'imgFilename': req.file.filename })
+}
+
+exports.getSavedList = (req, res, next) => {
+    req.getConnection((err, connection) => {
+        if(err) return next(err)
+
+        const userId = req.query.uid
+
+        const sql = `SELECT *
+        FROM saved
+        INNER JOIN articles ON articles.articleId = saved.articleId
+        WHERE saved.userId = ?
+        ORDER BY saved.savedTime DESC`
+
+        connection.query(sql, [userId], (err, result) => {
+            if(err) return next(err)
+            res.send(result)
         })
     })
 }

@@ -19,12 +19,24 @@ module.exports = function (app) {
 
     //Article
     app.get('/articles', articles.findAll)
+    app.get('/article', articles.getArticle)
+    app.post('/article', articles.createArticle)
+    app.get('/comments', articles.getComments)
+    app.post('/comment', articles.comment)
+    app.get('/save', articles.getSaved)
+    app.post('/save', articles.createSaved)
+    app.delete('/save', articles.deleteSaved)
+    app.get('/popular', articles.getPopular)
+    app.get('/popular2', articles.getPopular2)
 
     //User
-    app.post('/users', users.createUser)
     app.get('/check', users.checkUsername)
+    app.post('/users', users.createUser)
+    app.get('/savedlist', users.getSavedList)
 
     //API
     app.get('/autoplace', api.googleplace)
+    app.get('/getPrefectureName', api.getPrefectureName)
+    app.get('/getWeather', api.getWeather)
 
 }
