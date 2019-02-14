@@ -21,10 +21,10 @@ const storage = multer.diskStorage({
         console.log(req.route.path)
         console.log(file)
         if(req.route.path === '/users/avatar'){
-            cb(null, 'explore-japan/public/assets/avatar/')
+            cb(null, 'assets/avatar/')
         }
         if(req.route.path === '/upload/img'){
-            cb(null, 'explore-japan/public/assets/img/')
+            cb(null, 'assets/img/')
         }
     },
     onError : function(err, next) {
@@ -40,6 +40,7 @@ const upload = multer({ storage: storage })
 app.post('/users/avatar', upload.single('avatar'), users.uploadAvatar)
 app.post('/upload/img', upload.single('image'), articles.uploadImgInPost)
 
+app.use(express.static('assets'))
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json({ type: '*/*' }))
 app.use(myConnection(mysql, config.dbOptions, 'pool'))
