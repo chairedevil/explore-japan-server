@@ -1,66 +1,89 @@
+const axios = require('axios')
+const config = require('../config')
+
 exports.findAll = (req, res, next) => {
     req.getConnection((err, connection) => {
         if(err) return next(err)
 
         //API : http://localhost:3010/articles?search=tokyo+japan
-        
-        let params = [];
-        let words = req.query.search.split(" ");
-        if(words == ''){
-            wordsExp = ' '
-        }else{
-            wordsExp = words.join("|").toLowerCase()
-        }
 
-        //console.log(wordsExp, req.query.start, req.query.end)
-
+        const idx = parseInt(req.query.idx)
         const sPnt = req.query.start
         const ePnt = req.query.end
         const rnd = req.query.rnd
         const id = req.query.id | 0
 
-        if(req.query.start == '' && req.query.end == ''){
-            params.push( wordsExp, wordsExp, wordsExp, wordsExp, id )
-            sql = `SELECT * FROM articles
-            LEFT JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
-            WHERE ( articles.title REGEXP ? OR
-                prefectures.nameEn REGEXP ? OR
-                prefectures.nameJp REGEXP ? OR
-                articles.tags REGEXP ? ) AND
-                articles.articleId <> ?`
+        let params = [];
+        let words = req.query.search.split(" ");
+        if(words == ''){
+            if(req.query.start == '' && req.query.end == ''){
+                params.push( id )
+                sql = `SELECT * FROM articles
+                LEFT JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                WHERE articles.articleId <> ?`
+            }else{
+                params.push( sPnt, ePnt, sPnt, ePnt, sPnt, ePnt )
+                sql = `SELECT * FROM articles
+                LEFT JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                WHERE ((articles.articleType=0)
+                        AND ((DayOfYear(?) BETWEEN DayOfYear(articles.scopeDateStart) AND DayOfYear(articles.scopeDateEnd)) OR (DayOfYear(?) BETWEEN DayOfYear(articles.scopeDateStart) AND DayOfYear(articles.scopeDateEnd))))
+                        OR
+                        ((articles.articleType=1)
+                        AND ((DayOfYear(articles.scopeDateStart) BETWEEN DayOfYear(?) AND DayOfYear(?))))
+                        OR
+                        ((articles.articleType=2)
+                        AND ((? BETWEEN articles.scopeDateStart AND articles.scopeDateEnd) OR (? BETWEEN articles.scopeDateStart AND articles.scopeDateEnd)))
+                        OR
+                        (articles.scopeDateStart IS NULL AND articles.scopeDateEnd IS NULL)`
+            }
         }else{
-            params.push( wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp)
-            sql = `SELECT * FROM articles
-            LEFT JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
-            WHERE ((articles.articleType=0) AND (articles.title REGEXP ? OR
+            wordsExp = words.join("|").toLowerCase()
+
+            if(req.query.start == '' && req.query.end == ''){
+                params.push( wordsExp, wordsExp, wordsExp, wordsExp, id )
+                sql = `SELECT * FROM articles
+                LEFT JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                WHERE ( articles.title REGEXP ? OR
                     prefectures.nameEn REGEXP ? OR
                     prefectures.nameJp REGEXP ? OR
-                    articles.tags REGEXP ?)
-                    AND ((DayOfYear(?) BETWEEN DayOfYear(articles.scopeDateStart) AND DayOfYear(articles.scopeDateEnd)) OR (DayOfYear(?) BETWEEN DayOfYear(articles.scopeDateStart) AND DayOfYear(articles.scopeDateEnd))))
-                    OR
-                    ((articles.articleType=1) AND (articles.title REGEXP ? OR
-                    prefectures.nameEn REGEXP ? OR
-                    prefectures.nameJp REGEXP ? OR
-                    articles.tags REGEXP ?)
-                    AND ((DayOfYear(articles.scopeDateStart) BETWEEN DayOfYear(?) AND DayOfYear(?))))
-                    OR
-                    ((articles.articleType=2) AND (articles.title REGEXP ? OR
-                    prefectures.nameEn REGEXP ? OR
-                    prefectures.nameJp REGEXP ? OR
-                    articles.tags REGEXP ?)
-                    AND ((? BETWEEN articles.scopeDateStart AND articles.scopeDateEnd) OR (? BETWEEN articles.scopeDateStart AND articles.scopeDateEnd)))
-                    OR
-                    ((articles.title REGEXP ? OR
-                    prefectures.nameEn REGEXP ? OR
-                    prefectures.nameJp REGEXP ? OR
-                    articles.tags REGEXP ?)
-                    AND (articles.scopeDateStart IS NULL AND articles.scopeDateEnd IS NULL))`
+                    articles.tags REGEXP ? ) AND
+                    articles.articleId <> ?`
+            }else{
+                params.push( wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp)
+                sql = `SELECT * FROM articles
+                LEFT JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                WHERE ((articles.articleType=0) AND (articles.title REGEXP ? OR
+                        prefectures.nameEn REGEXP ? OR
+                        prefectures.nameJp REGEXP ? OR
+                        articles.tags REGEXP ?)
+                        AND ((DayOfYear(?) BETWEEN DayOfYear(articles.scopeDateStart) AND DayOfYear(articles.scopeDateEnd)) OR (DayOfYear(?) BETWEEN DayOfYear(articles.scopeDateStart) AND DayOfYear(articles.scopeDateEnd))))
+                        OR
+                        ((articles.articleType=1) AND (articles.title REGEXP ? OR
+                        prefectures.nameEn REGEXP ? OR
+                        prefectures.nameJp REGEXP ? OR
+                        articles.tags REGEXP ?)
+                        AND ((DayOfYear(articles.scopeDateStart) BETWEEN DayOfYear(?) AND DayOfYear(?))))
+                        OR
+                        ((articles.articleType=2) AND (articles.title REGEXP ? OR
+                        prefectures.nameEn REGEXP ? OR
+                        prefectures.nameJp REGEXP ? OR
+                        articles.tags REGEXP ?)
+                        AND ((? BETWEEN articles.scopeDateStart AND articles.scopeDateEnd) OR (? BETWEEN articles.scopeDateStart AND articles.scopeDateEnd)))
+                        OR
+                        ((articles.title REGEXP ? OR
+                        prefectures.nameEn REGEXP ? OR
+                        prefectures.nameJp REGEXP ? OR
+                        articles.tags REGEXP ?)
+                        AND (articles.scopeDateStart IS NULL AND articles.scopeDateEnd IS NULL))`
+            }
         }
+
+
 
         if(typeof rnd !== 'undefined'){
             sql = sql + ' ORDER BY RAND() LIMIT 3'
         }else{
-            sql = sql + ' ORDER BY articles.createdDateTime DESC'
+            sql = sql + ' ORDER BY articles.createdDateTime DESC LIMIT ' + idx
         }
 
         //console.log(sql)
@@ -78,7 +101,10 @@ exports.getArticle = (req, res, next) => {
         if(err) return next(err)
 
         const articleId = req.query.id
-        const sql = `SELECT * FROM articles WHERE articleId = ?`
+        const sql = `SELECT *
+            FROM articles
+            INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+            WHERE articleId = ?`
 
         connection.query(sql, [articleId], (err, result) => {
             if(err) return next(err)
@@ -206,30 +232,75 @@ exports.createArticle = (req, res, next) => {
     req.getConnection((err, connection) => {
         if(err) return next(err)
 
-        //console.log(req.body)
+        let lang = null
 
-        const insertData = {
-            title: req.body.title,
-            coverPath: req.body.coverPath,
-            content: req.body.content,
-            scopeDateStart: req.body.scopeDateStart,
-            scopeDateEnd: req.body.scopeDateEnd,
-            articleType: req.body.articleType,
-            userId: req.body.userId,
-            prefectureId: req.body.prefectureId,
-            lat: req.body.lat,
-            lng: req.body.lng,
-            tags: req.body.tags
+        if(req.body.content){
+            axios.get('https://translation.googleapis.com/language/translate/v2/detect', {
+                params:{
+                    key: config.GOOGLE_API_TOKEN,
+                    q: req.body.content.substring(34,200)
+                }
+            })
+            .then(({data})=>{
+    
+                if(data.data.detections[0][0].language === 'ja'){
+                    lang = 2
+                }else{
+                    lang = 1
+                }
+    
+                const insertData = {
+                    title: req.body.title,
+                    coverPath: req.body.coverPath,
+                    content: req.body.content,
+                    scopeDateStart: req.body.scopeDateStart,
+                    scopeDateEnd: req.body.scopeDateEnd,
+                    articleType: req.body.articleType,
+                    userId: req.body.userId,
+                    prefectureId: req.body.prefectureId,
+                    lat: req.body.lat,
+                    lng: req.body.lng,
+                    tags: req.body.tags,
+                    lang: lang
+                }
+    
+                req.getConnection((err, connection) => {
+                    if(err) return next(err)
+            
+                    connection.query("INSERT INTO articles set ?", insertData, (err, results) => {
+                        if(err) return next(err)
+                        res.send(results)
+                    })
+                })
+    
+            })
+        }else{
+
+            const insertData = {
+                title: req.body.title,
+                coverPath: req.body.coverPath,
+                content: req.body.content,
+                scopeDateStart: req.body.scopeDateStart,
+                scopeDateEnd: req.body.scopeDateEnd,
+                articleType: req.body.articleType,
+                userId: req.body.userId,
+                prefectureId: req.body.prefectureId,
+                lat: req.body.lat,
+                lng: req.body.lng,
+                tags: req.body.tags,
+                lang: lang
+            }
+            req.getConnection((err, connection) => {
+                if(err) return next(err)
+        
+                connection.query("INSERT INTO articles set ?", insertData, (err, results) => {
+                    if(err) return next(err)
+                    res.send(results)
+                })
+            })
+
         }
 
-        req.getConnection((err, connection) => {
-            if(err) return next(err)
-    
-            connection.query("INSERT INTO articles set ?", insertData, (err, results) => {
-                if(err) return next(err)
-                res.send(results)
-            })
-        })
 
     })
 }
