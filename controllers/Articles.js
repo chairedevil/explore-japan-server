@@ -7,7 +7,7 @@ exports.findAll = (req, res, next) => {
 
         //API : http://localhost:3010/articles?search=tokyo+japan
 
-        const idx = parseInt(req.query.idx)
+        const idx = parseInt(req.query.idx) | 3
         const sPnt = req.query.start
         const ePnt = req.query.end
         const rnd = req.query.rnd
@@ -36,44 +36,123 @@ exports.findAll = (req, res, next) => {
                         OR
                         (articles.scopeDateStart IS NULL AND articles.scopeDateEnd IS NULL)`
             }
+
         }else{
-            wordsExp = words.join("|").toLowerCase()
+            const prefectures = ["hokkaido","aomori","iwate","miyagi","akita","yamagata","fukushima","ibaraki","tochigi","gunma","saitama","chiba","tokyo","kanagawa","niigata","toyama","ishikawa","fukui","yamanashi","nagano","gifu","shizuoka","aichi","mie","shiga","kyoto","osaka","hyogo","nara","wakayama","japan","北海道","青森","岩手","宮城","秋田","山形","福島","茨城","栃木","群馬","埼玉","千葉","東京","神奈川","新潟","富山","石川","福井","山梨","長野","岐阜","静岡","愛知","三重","滋賀","京都","大阪","兵庫","奈良","和歌山","鳥取","島根","岡山","広島","山口","徳島","香川","愛媛","高知","福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島","沖縄","日本"]
+
+            const filterWordsTag = words.filter(word => {
+                return !prefectures.includes(word.toLowerCase())
+            })
+            const filterWordsPrefecture = words.filter(word => {
+                return prefectures.includes(word.toLowerCase())
+            })
+            const wordsExpForPrefecture = filterWordsPrefecture.length === 0 ? prefectures.join("|").toLowerCase() : filterWordsPrefecture.join("|").toLowerCase() + "|japan|日本"
+            const wordsExpForTag = rnd === '1' ? filterWordsTag.join("|").toLowerCase() : "%" + filterWordsTag.join("%").toLowerCase() + "%"
+
+            //console.log(wordsExpForTag)
+            //console.log(rnd)
+            //console.log(wordsExpForPrefecture)
 
             if(req.query.start == '' && req.query.end == ''){
-                params.push( wordsExp, wordsExp, wordsExp, wordsExp, id )
-                sql = `SELECT * FROM articles
-                LEFT JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
-                WHERE ( articles.title REGEXP ? OR
-                    prefectures.nameEn REGEXP ? OR
-                    prefectures.nameJp REGEXP ? OR
-                    articles.tags REGEXP ? ) AND
-                    articles.articleId <> ?`
+                params.push( wordsExpForPrefecture, wordsExpForPrefecture, wordsExpForTag, id )
+                if(rnd === '1'){
+                    console.log("test")
+                    sql = `SELECT * FROM articles
+                    INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                    WHERE
+                        articles.articleId IN(
+                        SELECT articleId
+                        FROM articles
+                        INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                        WHERE
+                            prefectures.nameEn REGEXP ? OR prefectures.nameJp REGEXP ?
+                    ) AND articles.articleId IN(
+                        SELECT articleId
+                        FROM articles
+                        INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                        WHERE
+                            articles.tags REGEXP ?
+                    ) AND articles.articleId <> ?`
+                }else{
+                    sql = `SELECT * FROM articles
+                    INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                    WHERE
+                        articles.articleId IN(
+                        SELECT articleId
+                        FROM articles
+                        INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                        WHERE
+                            prefectures.nameEn REGEXP ? OR prefectures.nameJp REGEXP ?
+                    ) AND articles.articleId IN(
+                        SELECT articleId
+                        FROM articles
+                        INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                        WHERE
+                            articles.tags LIKE ?
+                    ) AND articles.articleId <> ?`
+                }
             }else{
-                params.push( wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp, sPnt, ePnt, wordsExp, wordsExp, wordsExp, wordsExp)
+                params.push( wordsExpForPrefecture, wordsExpForPrefecture, wordsExpForTag, sPnt, ePnt, wordsExpForPrefecture, wordsExpForPrefecture, wordsExpForTag, sPnt, ePnt, wordsExpForPrefecture, wordsExpForPrefecture, wordsExpForTag, sPnt, ePnt, wordsExpForPrefecture, wordsExpForPrefecture, wordsExpForTag )
                 sql = `SELECT * FROM articles
                 LEFT JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
-                WHERE ((articles.articleType=0) AND (articles.title REGEXP ? OR
-                        prefectures.nameEn REGEXP ? OR
-                        prefectures.nameJp REGEXP ? OR
-                        articles.tags REGEXP ?)
+                WHERE ((articles.articleType=0) AND (articles.articleId IN(
+                    SELECT articleId
+                    FROM articles
+                    INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                    WHERE
+                        prefectures.nameEn REGEXP ? OR prefectures.nameJp REGEXP ?
+                ) AND articles.articleId IN(
+                    SELECT articleId
+                    FROM articles
+                    INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                    WHERE
+                        articles.tags LIKE ?
+                ))
                         AND ((DayOfYear(?) BETWEEN DayOfYear(articles.scopeDateStart) AND DayOfYear(articles.scopeDateEnd)) OR (DayOfYear(?) BETWEEN DayOfYear(articles.scopeDateStart) AND DayOfYear(articles.scopeDateEnd))))
                         OR
-                        ((articles.articleType=1) AND (articles.title REGEXP ? OR
-                        prefectures.nameEn REGEXP ? OR
-                        prefectures.nameJp REGEXP ? OR
-                        articles.tags REGEXP ?)
+                        ((articles.articleType=1) AND (articles.articleId IN(
+                            SELECT articleId
+                            FROM articles
+                            INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                            WHERE
+                                prefectures.nameEn REGEXP ? OR prefectures.nameJp REGEXP ?
+                        ) AND articles.articleId IN(
+                            SELECT articleId
+                            FROM articles
+                            INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                            WHERE
+                                articles.tags LIKE ?
+                        ))
                         AND ((DayOfYear(articles.scopeDateStart) BETWEEN DayOfYear(?) AND DayOfYear(?))))
                         OR
-                        ((articles.articleType=2) AND (articles.title REGEXP ? OR
-                        prefectures.nameEn REGEXP ? OR
-                        prefectures.nameJp REGEXP ? OR
-                        articles.tags REGEXP ?)
+                        ((articles.articleType=2) AND (articles.articleId IN(
+                            SELECT articleId
+                            FROM articles
+                            INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                            WHERE
+                                prefectures.nameEn REGEXP ? OR prefectures.nameJp REGEXP ?
+                        ) AND articles.articleId IN(
+                            SELECT articleId
+                            FROM articles
+                            INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                            WHERE
+                                articles.tags LIKE ?
+                        ))
                         AND ((? BETWEEN articles.scopeDateStart AND articles.scopeDateEnd) OR (? BETWEEN articles.scopeDateStart AND articles.scopeDateEnd)))
                         OR
-                        ((articles.title REGEXP ? OR
-                        prefectures.nameEn REGEXP ? OR
-                        prefectures.nameJp REGEXP ? OR
-                        articles.tags REGEXP ?)
+                        ((articles.articleId IN(
+                            SELECT articleId
+                            FROM articles
+                            INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                            WHERE
+                                prefectures.nameEn REGEXP ? OR prefectures.nameJp REGEXP ?
+                        ) AND articles.articleId IN(
+                            SELECT articleId
+                            FROM articles
+                            INNER JOIN prefectures ON articles.prefectureId = prefectures.prefectureId
+                            WHERE
+                                articles.tags LIKE ?
+                        ))
                         AND (articles.scopeDateStart IS NULL AND articles.scopeDateEnd IS NULL))`
             }
         }

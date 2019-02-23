@@ -70,5 +70,8 @@ exports.getWeather = (req, res, next) => {
     .then(({data})=>{
         res.send(data)
     })
+    .catch(error => {
+        res.status(404).send([])
+    })
 
 }
