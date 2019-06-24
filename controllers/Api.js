@@ -19,6 +19,8 @@ exports.googleplace = (req, res, next) => {
         })
         .then(({data})=>{
 
+            //res.send(data)
+
             suggestArg = [chr.replace(/^\w/, c => c.toUpperCase())]
             suggestArgFilter = []
             data.predictions.forEach((r)=>{
@@ -31,6 +33,30 @@ exports.googleplace = (req, res, next) => {
 
             res.send(suggestArgFilter)
         })
+
+}
+
+exports.getGeo = (req, res, next) => {
+
+    //API : http://localhost:3010/getgeo?chr=abcd
+
+    chr = req.query.chr.trim()
+
+    axios.get('https://maps.googleapis.com/maps/api/place/findplacefromtext/json?',{
+        params:{
+            //language: 'ja',
+            input: chr,
+            key: config.GOOGLE_API_TOKEN,
+            inputtype: 'textquery',
+            sessiontoken: '1234567890',
+            fields: 'photos,formatted_address,name,opening_hours,geometry'
+        }
+    })
+    .then(({data})=>{
+
+        res.send(data)
+
+    })
 
 }
 
