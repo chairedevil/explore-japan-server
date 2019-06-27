@@ -37,6 +37,8 @@ module.exports = function (app) {
     //API
     app.get('/autoplace', api.googleplace)
     app.get('/getgeo', api.getGeo)
+    app.get('/gettweet', api.getTweetByGeo)
+    app.get('/gettimeline', api.getTweetByUser)
     app.get('/getPrefectureName', api.getPrefectureName)
     app.get('/getWeather', api.getWeather)
 
