@@ -101,6 +101,11 @@ exports.getTweetByUser = (req, res, next) => {
     //http://localhost:5000/gettimeline?user=kapookdotcom
 
     const username = req.query.user
+    if(username === 'chairedevil'){
+        const errors = "Can't get Chaiwat's timeline"
+        res.status(404).json({ "errors" : errors })
+        return;
+    }
 
     oauth.get(
         `https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=${username}&count=30`,
