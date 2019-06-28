@@ -82,16 +82,25 @@ exports.getTweetByGeo = (req, res, next) => {
 
     const geo = req.query.geo
 
-    oauth.get(
-        `https://api.twitter.com/1.1/search/tweets.json?geocode=${geo},2km&result_type=mixed&count=50`,
-        accessToken, 
-        accessTokenSecret, 
-        (e, data, inLoopRes) => {
-            if (e) console.error(e);
-            //parsejsonData = JSON.parse(data)
-            const filteredData = JSON.parse(data).statuses.filter((data)=> { return data.geo != null})
-            res.send(filteredData)
-        });
+    exp = /^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$/
+    if(geo.match(exp)){
+        oauth.get(
+            `https://api.twitter.com/1.1/search/tweets.json?geocode=${geo},2km&result_type=mixed&count=50`,
+            accessToken, 
+            accessTokenSecret, 
+            (e, data, inLoopRes) => {
+                if (e) console.error(e);
+                //parsejsonData = JSON.parse(data)
+                const filteredData = JSON.parse(data).statuses.filter((data)=> { return data.geo != null})
+                res.send(filteredData)
+            });
+    }else{
+        console.log('not match')
+
+        const errors = "Coordinates isn't match with the pattern."
+        res.status(404).json({ "errors" : errors })
+        return;
+    }
 
 }
 
