@@ -83,7 +83,7 @@ exports.getTweetByGeo = (req, res, next) => {
     const geo = req.query.geo
 
     oauth.get(
-        `https://api.twitter.com/1.1/search/tweets.json?geocode=${geo},1km&result_type=mixed&count=50`,
+        `https://api.twitter.com/1.1/search/tweets.json?geocode=${geo},2km&result_type=mixed&count=50`,
         accessToken, 
         accessTokenSecret, 
         (e, data, inLoopRes) => {
