@@ -1,4 +1,4 @@
-/*
+
 module.exports = {
     secret: 'chai731token',
     dbOptions: {
@@ -11,10 +11,10 @@ module.exports = {
     },
     GOOGLE_API_TOKEN: 'AIzaSyD_vlghBt3iKntZq1nVCR6uGVJuCk3hbdE'
 }
-*/
 
 
-module.exports = {
+
+/*module.exports = {
     secret: 'chai731token',
     dbOptions: {
         host    : 'localhost',
@@ -26,4 +26,4 @@ module.exports = {
     },
     GOOGLE_API_TOKEN: 'AIzaSyD_vlghBt3iKntZq1nVCR6uGVJuCk3hbdE',
     openWeatherMapKey: 'b740b864d8b19429f75b2ff432e93214'
-}
+}*/
