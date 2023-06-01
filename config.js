@@ -9,7 +9,7 @@ module.exports = {
         database    : 'notp0xuysv2c5z51',
         //socketPath: '/Applications/MAMP/tmp/mysql/mysql.sock'
     },
-    GOOGLE_API_TOKEN: 'AIzaSyD_vlghBt3iKntZq1nVCR6uGVJuCk3hbdE'
+    GOOGLE_API_TOKEN: 'XXX'
 }
 
 
